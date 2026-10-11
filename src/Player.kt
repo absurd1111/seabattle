@@ -1,97 +1,69 @@
-class Player(size: Int = 10) {
-    var name: String = ""
-    var field: Array<CharArray> = Array(size) { CharArray(size){'.'} }
+class Player(val name: String) {
 
-    var shots: Int = 0
-    var hits: Int = 0
-    var shipsLeft: Int = 20
+    private val _field: Array<CharArray> =
+        Array(10) { CharArray(10) { '.' } }
 
-    fun isAlive(): Boolean {
-        return shipsLeft > 0
-    }
+    fun field(): Array<CharArray> = _field
 
-    fun accuracy(): Double {
-        if (shots == 0) {
-            return 0.0
-        }
-        return hits * 100.0 / shots
-    }
+    private var _shots: Int = 0
+    private var _hits: Int = 0
 
-    fun status(): String {
-        val percent = (accuracy() * 10).toInt() / 10.0
-        return "Игрок $name: палуб осталось $shipsLeft, выстрелов $shots, попаданий $hits, точность $percent%"
-    }
+    val shots: Int
+        get() = _shots
 
-    fun takeDamage(): Boolean {
-        shipsLeft--
-        return isAlive()
-    }
+    val hits: Int
+        get() = _hits
+
+    fun accuracy(): Double =
+        if (_shots == 0) 0.0 else _hits * 100.0 / _shots
 
     fun registerShot(hit: Boolean) {
-        shots++
-        if (hit) {
-            hits++
+        _shots++
+        if (hit) _hits++
+    }
+
+    fun placeShip(row: Int, col: Int) {
+        if (row in 0..9 && col in 0..9) {
+            _field[row][col] = '#'
+        }
+    }
+
+    fun markShot(row: Int, col: Int, hit: Boolean) {
+        if (row in 0..9 && col in 0..9) {
+            _field[row][col] = if (hit) 'X' else 'O'
         }
     }
 
     fun reset() {
-        shots = 0
-        hits = 0
-        shipsLeft = 20
-        for (r in field.indices) {
-            for (c in field[r].indices) {
-                field[r][c] = '.'
+        _shots = 0
+        _hits = 0
+        for (r in 0..9) {
+            for (c in 0..9) {
+                _field[r][c] = '.'
             }
         }
     }
 
-    fun printStats() {
-        println(status())
+    fun status(): String {
+        val acc = String.format("%.1f", accuracy())
+        return "Игрок $name: выстрелов $_shots, попаданий $_hits, точность $acc%"
     }
+}
 
-    fun printField(showShips: Boolean = true, debug: Boolean = false){
-        if (debug) {
-            println("=== $name (debug) ===")
-            print("     ")
-            for (c in field.indices) {
-                print("$c   ")
-            }
-            println()
-            print("   +")
-            print("---+".repeat(field.size))
-            println()
-            for (r in field.indices) {
-                print("$r  |")
-                for (c in field.indices) {
-                    if (showShips) {
-                        print(" ${field[r][c]} |")
-                    } else {
-                        if (field[r][c] == '#') print(" . |")
-                        else print(" ${field[r][c]} |")
-                    }
-                }
-                println()
-                print("   +")
-                print("---+".repeat(field.size))
-                println()
-            }
-        }
-        else {
-            println("==== $name ====")
-            print("  ")
-            for (c in field.indices) print("$c ")
-            println()
-            for (r in field.indices) {
-                print("$r ")
-                for (c in field.indices) {
-                    if (showShips) print("${field[r][c]} ")
-                    else {
-                        if (field[r][c] == '#') print(". ")
-                        else print("${field[r][c]} ")
-                    }
-                }
-                println()
-            }
-        }
+fun printBothFields(player: Player, enemy: Player) {
+    println("=== Поле игрока ${player.name} ===      === Поле игрока ${enemy.name} ===")
+    print("  ")
+    for (c in 0..9) print("$c ")
+    print("      ")
+    print("  ")
+    for (c in 0..9) print("$c ")
+    println()
+    for (r in 0..9) {
+        print("$r ")
+        for (c in 0..9) print("${player.field()[r][c]} ")
+        print("      ")
+        print("$r ")
+        for (c in 0..9) print("${enemy.field()[r][c]} ")
+        println()
     }
 }
